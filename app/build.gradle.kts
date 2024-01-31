@@ -76,6 +76,11 @@ dependencies {
 
     //liveData
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
+
+    //room
+    implementation("androidx.room:room-runtime:2.5.0")
+    kapt("androidx.room:room-compiler:2.5.0")
+    implementation("androidx.room:room-ktx:2.5.0")
 }
 
 kapt {
