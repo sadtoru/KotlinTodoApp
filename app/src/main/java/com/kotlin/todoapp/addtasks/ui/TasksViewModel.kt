@@ -4,16 +4,33 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kotlin.todoapp.addtasks.domain.AddTaskUseCase
+import com.kotlin.todoapp.addtasks.domain.GetTasksUseCase
+import com.kotlin.todoapp.addtasks.ui.TasksUiState.Success
 import com.kotlin.todoapp.addtasks.ui.model.TaskModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class TasksViewModel @Inject constructor():ViewModel() {
+class TasksViewModel @Inject constructor(
+    private val addTaskUseCase: AddTaskUseCase,
+    getTasksUseCase: GetTasksUseCase
+) : ViewModel() {
+
+    val uiState: StateFlow<TasksUiState> = getTasksUseCase().map(::Success)
+        .catch { TasksUiState.Error(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TasksUiState.Loading)
 
     private val _showDialog = MutableLiveData<Boolean>()
     val showDialog: LiveData<Boolean> = _showDialog
 
     private val _tasks = mutableStateListOf<TaskModel>()
-    val task:List<TaskModel> = _tasks
+    val task: List<TaskModel> = _tasks
 
     fun onDialogClose() {
         _showDialog.value = false
@@ -22,6 +39,10 @@ class TasksViewModel @Inject constructor():ViewModel() {
     fun onTaskCreated(task: String) {
         _showDialog.value = false
         _tasks.add(TaskModel(task = task))
+
+        viewModelScope.launch {
+            addTaskUseCase(TaskModel(task = task))
+        }
     }
 
     fun onShowDialogClick() {
