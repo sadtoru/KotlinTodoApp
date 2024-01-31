@@ -16,13 +16,13 @@ import javax.inject.Singleton
 class DatabaseModule {
 
     @Provides
-    fun provideTaskDao(todoDatabase: TodoDatabase):TaskDao{
+    fun provideTaskDao(todoDatabase: TodoDatabase): TaskDao {
         return todoDatabase.taskDao()
     }
 
     @Provides
     @Singleton
-    fun provideTodoDatabase(@ApplicationContext appContext: Context): TodoDatabase{
+    fun provideTodoDatabase(@ApplicationContext appContext: Context): TodoDatabase {
         return Room.databaseBuilder(appContext, TodoDatabase::class.java, "TaskDatabase").build()
     }
 }
